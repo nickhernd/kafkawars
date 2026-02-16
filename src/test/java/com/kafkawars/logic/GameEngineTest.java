@@ -3,6 +3,7 @@ package com.kafkawars.logic;
 import com.kafkawars.domain.GameState;
 import com.kafkawars.domain.GridPosition;
 import com.kafkawars.domain.MoveCommand;
+import com.kafkawars.domain.UnitState;
 import com.kafkawars.domain.events.MovementRejected;
 import com.kafkawars.domain.events.UnitMoved;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +27,8 @@ class GameEngineTest {
     void processMove_shouldSucceed_whenTargetCellIsEmpty() {
         // Arrange
         GridPosition initialPos = new GridPosition(0, 0);
-        GameState currentState = new GameState(Collections.singletonMap("unit-1", initialPos));
+        UnitState unit = new UnitState("player-1", initialPos);
+        GameState currentState = new GameState(Collections.singletonMap("unit-1", unit));
         MoveCommand command = new MoveCommand("player-1", "unit-1", "match-1", new GridPosition(1, 0), "MOVE");
 
         // Act
@@ -47,7 +49,10 @@ class GameEngineTest {
         // Arrange
         GridPosition unit1Pos = new GridPosition(0, 0);
         GridPosition unit2Pos = new GridPosition(1, 0);
-        GameState currentState = new GameState(Map.of("unit-1", unit1Pos, "unit-2", unit2Pos));
+        GameState currentState = new GameState(Map.of(
+            "unit-1", new UnitState("player-1", unit1Pos),
+            "unit-2", new UnitState("player-2", unit2Pos)
+        ));
         
         // Command to move unit-1 into unit-2's position
         MoveCommand command = new MoveCommand("player-1", "unit-1", "match-1", unit2Pos, "MOVE");
@@ -66,23 +71,19 @@ class GameEngineTest {
     }
 
     @Test
-    void processMove_shouldSucceed_forNewUnit() {
-        // A unit that is not yet on the board
+    void processMove_shouldFail_ifPlayerDoesNotOwnUnit() {
         // Arrange
-        GameState currentState = new GameState(Collections.emptyMap());
-        MoveCommand command = new MoveCommand("player-1", "new-unit", "match-1", new GridPosition(5, 5), "MOVE");
+        GridPosition initialPos = new GridPosition(0, 0);
+        UnitState unit = new UnitState("player-2", initialPos); // This unit is owned by player-2
+        GameState currentState = new GameState(Collections.singletonMap("unit-1", unit));
+        
+        // player-1 tries to move player-2's unit
+        MoveCommand command = new MoveCommand("player-1", "unit-1", "match-1", new GridPosition(1, 0), "MOVE");
 
         // Act
         ProcessingResult result = gameEngine.processMove(currentState, command);
 
         // Assert
-        assertTrue(result instanceof ProcessingResult.Success);
-        ProcessingResult.Success successResult = (ProcessingResult.Success) result;
-        UnitMoved event = successResult.event();
-
-        assertEquals("new-unit", event.unitId());
-        // Special position for a unit not previously on the board
-        assertEquals(new GridPosition(-1, -1), event.oldPosition());
-        assertEquals(new GridPosition(5, 5), event.newPosition());
+        assertTrue(result instanceof ProcessingResult.Failure, "Result should be a failure.");
     }
 }

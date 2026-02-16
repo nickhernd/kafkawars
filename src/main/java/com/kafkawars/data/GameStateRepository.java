@@ -2,10 +2,11 @@ package com.kafkawars.data;
 
 import com.kafkawars.domain.GameState;
 import com.kafkawars.domain.GridPosition;
+import com.kafkawars.domain.UnitState;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -20,12 +21,25 @@ public class GameStateRepository {
 
     /**
      * Finds the current state for a given match.
-     * If no state exists, returns an empty GameState.
      * @param matchId The ID of the match.
-     * @return The current GameState.
+     * @return An Optional containing the GameState if it exists, otherwise empty.
      */
-    public GameState findByMatchId(String matchId) {
-        return gameStates.getOrDefault(matchId, new GameState(Collections.emptyMap()));
+    public Optional<GameState> findByMatchId(String matchId) {
+        return Optional.ofNullable(gameStates.get(matchId));
+    }
+
+    /**
+     * Creates and saves the initial state for a new match.
+     * @param matchId The ID of the match to create.
+     * @return The newly created GameState.
+     */
+    public GameState createInitialState(String matchId) {
+        GameState initialState = new GameState(Map.of(
+            "p1-unit1", new UnitState("player1", new GridPosition(1, 1)),
+            "p2-unit1", new UnitState("player2", new GridPosition(8, 8))
+        ));
+        this.save(matchId, initialState);
+        return initialState;
     }
 
     /**

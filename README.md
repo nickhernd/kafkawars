@@ -65,8 +65,6 @@ Puedes observar los tópicos, mensajes y consumidores de Kafka abriendo la inter
 
 ## Pruebas en un Entorno Distribuido (Máquinas Virtuales)
 
-¡Sí, es totalmente posible y una excelente idea! La arquitectura está diseñada para esto. Aquí tienes una guía conceptual:
-
 1.  **Configuración de Red:** Asegúrate de que todas tus máquinas virtuales (VMs) estén en la misma red y puedan comunicarse entre ellas a través de sus direcciones IP.
 
 2.  **Desplegar el Clúster de Kafka:** En lugar de usar Docker Compose, instalarías y ejecutarías un broker de Kafka en 3 VMs distintas.
@@ -90,3 +88,11 @@ Este montaje simularía un entorno de producción real y te permitiría probar l
 *   `/logic`: El `GameEngine` que contiene la lógica de negocio pura.
 *   `/messaging`: Los productores y consumidores de Kafka que forman el "Bucle Kafka".
 *   `/security`: El `SecurityValidator` para la validación de firmas de comandos.
+
+
+docker-compose up -d && mvn spring-boot:run
+
+
+mvn exec:java -Dexec.mainClass="com.kafkawars.client.KafkaWarsClient" -Dexec.args="player1"
+
+mvn exec:java -Dexec.mainClass="com.kafkawars.client.KafkaWarsClient" -Dexec.args="player2"

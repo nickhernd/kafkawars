@@ -28,33 +28,34 @@ class DomainModelTest {
 
     @Test
     void gameStateShouldBeImmutable() {
-        Map<String, GridPosition> initialPositions = new java.util.HashMap<>();
-        initialPositions.put("unit-1", new GridPosition(0, 0));
+        Map<String, UnitState> initialUnits = new java.util.HashMap<>();
+        initialUnits.put("unit-1", new UnitState("p1", new GridPosition(0, 0)));
         
-        GameState initialState = new GameState(initialPositions);
+        GameState initialState = new GameState(initialUnits);
 
         // Try to modify the map passed to the constructor
-        initialPositions.put("unit-2", new GridPosition(1, 1));
+        initialUnits.put("unit-2", new UnitState("p2", new GridPosition(1, 1)));
         
-        assertEquals(1, initialState.unitPositions().size(), "Initial GameState should not be affected by external modifications.");
+        assertEquals(1, initialState.units().size(), "Initial GameState should not be affected by external modifications.");
         assertThrows(UnsupportedOperationException.class, () -> {
-            initialState.unitPositions().put("unit-3", new GridPosition(2, 2));
-        }, "The map returned by unitPositions() should be unmodifiable.");
+            initialState.units().put("unit-3", new UnitState("p3", new GridPosition(2, 2)));
+        }, "The map returned by units() should be unmodifiable.");
     }
 
     @Test
     void updateUnitPositionShouldReturnNewGameState() {
         GridPosition initialPos = new GridPosition(5, 5);
-        GameState initialState = new GameState(Collections.singletonMap("unit-x", initialPos));
+        UnitState initialUnit = new UnitState("p1", initialPos);
+        GameState initialState = new GameState(Collections.singletonMap("unit-x", initialUnit));
 
         GridPosition newPos = new GridPosition(6, 5);
         GameState newState = initialState.updateUnitPosition("unit-x", newPos);
 
         // Verify the new state is different and has the updated position
         assertNotSame(initialState, newState, "updateUnitPosition should return a new instance.");
-        assertEquals(newPos, newState.unitPositions().get("unit-x"));
+        assertEquals(newPos, newState.units().get("unit-x").position());
 
         // Verify the original state is unchanged
-        assertEquals(initialPos, initialState.unitPositions().get("unit-x"), "The original GameState instance should not be mutated.");
+        assertEquals(initialPos, initialState.units().get("unit-x").position(), "The original GameState instance should not be mutated.");
     }
 }

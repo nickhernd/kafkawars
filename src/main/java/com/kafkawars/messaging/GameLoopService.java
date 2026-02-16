@@ -14,6 +14,8 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.stereotype.Service;
 import com.kafkawars.config.KafkaTopicConfig;
 
+import java.util.Optional;
+
 
 @Service
 public class GameLoopService {
@@ -45,8 +47,12 @@ public class GameLoopService {
             return;
         }
 
-        // 1. Load current state
-        GameState currentState = gameStateRepository.findByMatchId(matchId);
+        // 1. Load current state or create a new one if it's the first command for the match
+        GameState currentState = gameStateRepository.findByMatchId(matchId)
+                .orElseGet(() -> {
+                    log.info("No state found for match '{}'. Creating initial state.", matchId);
+                    return gameStateRepository.createInitialState(matchId);
+                });
 
         // 2. Process command with the game engine
         ProcessingResult result = gameEngine.processMove(currentState, command);
