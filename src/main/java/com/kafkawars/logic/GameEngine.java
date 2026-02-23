@@ -31,6 +31,7 @@ public class GameEngine {
      */
     public ProcessingResult processMove(GameState currentState, MoveCommand command) {
 <<<<<<< HEAD
+<<<<<<< HEAD
         UnitState unitState = currentState.units().get(command.unitId());
 
         // 1. Check if unit exists
@@ -58,6 +59,17 @@ public class GameEngine {
             );
         }
 
+=======
+        // --- Validation Logic ---
+        
+        // 1. Check if the target position is within the grid boundaries.
+        if (!command.target().isValid(GRID_WIDTH, GRID_HEIGHT)) {
+            return new ProcessingResult.Failure(
+                new MovementRejected(command.unitId(), command.target(), "Target position is out of bounds.")
+            );
+        }
+
+>>>>>>> 71429a0 (improvement)
         // 2. Check if the target position is already occupied by another unit.
         // This is the core of the deterministic concurrency resolution.
 >>>>>>> 71429a0 (improvement)
@@ -71,7 +83,10 @@ public class GameEngine {
         GridPosition oldPosition = unitState.position();
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 71429a0 (improvement)
         // 3. Movement range validation
         if (oldPosition != null) {
             // Unit exists, check if movement is within range.
