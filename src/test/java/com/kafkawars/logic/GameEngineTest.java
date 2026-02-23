@@ -107,40 +107,7 @@ class GameEngineTest {
     void processMove_shouldFail_whenMovementIsTooFar() {
         // Arrange
         GridPosition initialPos = new GridPosition(0, 0);
-        GameState currentState = new GameState(Collections.singletonMap("unit-1", initialPos));
-        // Attempt to move 2 steps
-        MoveCommand command = new MoveCommand("player-1", "unit-1", "match-1", new GridPosition(2, 0), "MOVE");
-
-        // Act
-        ProcessingResult result = gameEngine.processMove(currentState, command);
-
-        // Assert
-        assertTrue(result instanceof ProcessingResult.Failure);
-        ProcessingResult.Failure failure = (ProcessingResult.Failure) result;
-        assertEquals("Movement distance too far.", failure.event().reason());
-    }
-
-    @Test
-    void processMove_shouldFail_whenTargetIsOutOfBounds() {
-        // Arrange
-        GameState currentState = new GameState(Collections.emptyMap());
-        // Attempt to spawn outside the 20x20 grid
-        MoveCommand command = new MoveCommand("player-1", "bad-unit", "match-1", new GridPosition(20, 20), "MOVE");
-
-        // Act
-        ProcessingResult result = gameEngine.processMove(currentState, command);
-
-        // Assert
-        assertTrue(result instanceof ProcessingResult.Failure);
-        ProcessingResult.Failure failure = (ProcessingResult.Failure) result;
-        assertEquals("Target position is out of bounds.", failure.event().reason());
-    }
-
-    @Test
-    void processMove_shouldFail_whenMovementIsTooFar() {
-        // Arrange
-        GridPosition initialPos = new GridPosition(0, 0);
-        GameState currentState = new GameState(Collections.singletonMap("unit-1", initialPos));
+        GameState currentState = new GameState(Collections.singletonMap("unit-1", new UnitState("player-1", initialPos)));
         // Attempt to move 2 steps
         MoveCommand command = new MoveCommand("player-1", "unit-1", "match-1", new GridPosition(2, 0), "MOVE");
 

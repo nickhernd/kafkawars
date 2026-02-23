@@ -28,8 +28,9 @@ public class GameRenderer {
             for (int x = 0; x < WIDTH; x++) {
                 String unitAtPos = findUnitAt(unitPositions, x, y);
                 if (unitAtPos != null) {
-                    // Use first letter of Unit ID
-                    sb.append(" ").append(unitAtPos.substring(0, 1).toUpperCase());
+                    // Show 1 for player 1, 2 for player 2 based on unitId
+                    char icon = unitAtPos.contains("p1") ? '1' : '2';
+                    sb.append(" ").append(icon);
                 } else {
                     sb.append(" .");
                 }
@@ -38,8 +39,7 @@ public class GameRenderer {
         }
 
         sb.append("  +").append("--".repeat(WIDTH)).append("+\n");
-        sb.append("Units: ").append(unitPositions.toString()).append("\n");
-        sb.append("Enter command (unitId x y) or 'exit': ");
+        sb.append("CONTROLS: W/A/S/D to move, Q to exit\n");
         
         System.out.print(sb.toString());
         System.out.flush();

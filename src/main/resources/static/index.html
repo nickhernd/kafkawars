@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kafka Wars Web</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 { margin-bottom: 10px; }
+        #game-container {
+            display: grid;
+            grid-template-columns: repeat(20, 25px);
+            grid-template-rows: repeat(20, 25px);
+            gap: 1px;
+            background-color: #333;
+            border: 2px solid #00ff00;
+            padding: 5px;
+        }
+        .cell {
+            width: 25px;
+            height: 25px;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .player1 { background-color: #004400; color: #fff; border-radius: 50%; }
+        .player2 { background-color: #440000; color: #fff; border-radius: 50%; }
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #888;
+        }
+        #status { margin-bottom: 10px; color: #ff00ff; }
+    </style>
+</head>
+<body>
+    <h1>KAFKA WARS</h1>
+    <div id="status">Connecting...</div>
+    <div id="game-container"></div>
+    <div class="controls">
+        Use <b>WASD</b> to move your unit.<br>
+        Open another tab as "player2" to play against yourself!
+    </div>
+
+    <script>
+        const GRID_SIZE = 20;
+        const MATCH_ID = 'match-1';
+        let playerId = prompt("Enter Player ID (player1 or player2):", "player1") || "player1";
+        const unitId = playerId === "player1" ? "p1-unit1" : "p2-unit1";
+        
+        const container = document.getElementById('game-container');
+        const status = document.getElementById('status');
+
+        // Initialize grid
+        function initGrid() {
+            container.innerHTML = '';
+            for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.id = `cell-${i % GRID_SIZE}-${Math.floor(i / GRID_SIZE)}`;
+                container.appendChild(cell);
+            }
+        }
+
+        async function fetchState() {
+            try {
+                const response = await fetch(`/api/v1/state/${MATCH_ID}`);
+                if (!response.ok) throw new Error('Server error');
+                const data = await response.json();
+                renderState(data.units);
+                status.innerText = `Playing as: ${playerId} (${unitId})`;
+            } catch (err) {
+                status.innerText = "Error: Server not reachable";
+            }
+        }
+
+        function renderState(units) {
+            // Clear previous units
+            document.querySelectorAll('.cell').forEach(c => {
+                c.innerText = '';
+                c.classList.remove('player1', 'player2');
+            });
+
+            // Draw units
+            for (const [id, state] of Object.entries(units)) {
+                const pos = state.position;
+                const cell = document.getElementById(`cell-${pos.x}-${pos.y}`);
+                if (cell) {
+                    cell.innerText = id.startsWith('p1') ? '1' : '2';
+                    cell.classList.add(id.startsWith('p1') ? 'player1' : 'player2');
+                }
+            }
+        }
+
+        async function move(dx, dy) {
+            try {
+                // Get current position first
+                const response = await fetch(`/api/v1/state/${MATCH_ID}`);
+                const data = await response.json();
+                const currentPos = data.units[unitId].position;
+
+                const nextX = Math.max(0, Math.min(19, currentPos.x + dx));
+                const nextY = Math.max(0, Math.min(19, currentPos.y + dy));
+
+                if (nextX === currentPos.x && nextY === currentPos.y) return;
+
+                const command = {
+                    actionType: "MOVE",
+                    playerId: playerId,
+                    unitId: unitId,
+                    matchId: MATCH_ID,
+                    target: { x: nextX, y: nextY }
+                };
+
+                // In a real app, we'd sign this. For now, we mock the SignedCommand structure the server expects.
+                const signedCommand = {
+                    payload: command,
+                    signature: "web-mock-signature",
+                    timestamp: Math.floor(Date.now() / 1000),
+                    nonce: Math.random().toString(36).substring(7)
+                };
+
+                await fetch('/api/v1/command', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(signedCommand)
+                });
+                
+                fetchState(); // Immediate refresh
+            } catch (err) {
+                console.error("Move error:", err);
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            switch(e.key.toLowerCase()) {
+                case 'w': move(0, -1); break;
+                case 's': move(0, 1); break;
+                case 'a': move(-1, 0); break;
+                case 'd': move(1, 0); break;
+            }
+        });
+
+        initGrid();
+        setInterval(fetchState, 1000);
+        fetchState();
+    </script>
+</body>
+</html>

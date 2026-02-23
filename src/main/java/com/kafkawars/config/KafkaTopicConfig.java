@@ -14,8 +14,8 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic gameCommandsTopic() {
         return TopicBuilder.name(COMMANDS_TOPIC)
-                .partitions(3) // As per the original design for match-based partitioning
-                .replicas(3)   // Matching the broker count
+                .partitions(3)
+                .replicas(1)
                 .build();
     }
 
@@ -23,8 +23,8 @@ public class KafkaTopicConfig {
     public NewTopic gameEventsTopic() {
         return TopicBuilder.name(EVENTS_TOPIC)
                 .partitions(1)
-                .replicas(3)   // High availability for events
-                .compact()     // Use log compaction for game state events
+                .replicas(1)
+                .compact()
                 .build();
     }
 }
