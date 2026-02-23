@@ -1,36 +1,64 @@
 package com.kafkawars.client;
 
-// This is a placeholder for the Lanterna-based UI rendering.
-// A real implementation would depend on the Lanterna library.
+import com.kafkawars.domain.GridPosition;
+import java.util.Map;
+
 public class GameRenderer {
 
+    private static final int WIDTH = 20;
+    private static final int HEIGHT = 20;
+
     public void initialize() {
-        System.out.println("GameRenderer: Initializing screen... (Lanterna would do this)");
+        System.out.println("\033[H\033[2J"); // Clear screen
+        System.out.flush();
     }
 
-    public void drawGrid(int width, int height) {
-        System.out.println("GameRenderer: Drawing a " + width + "x" + height + " grid.");
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                System.out.print("[ ]");
+    public void render(Map<String, GridPosition> unitPositions) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\033[H"); // Move cursor to top
+        sb.append("=== KAFKA WARS BATTLEFIELD (20x20) ===\n");
+        
+        // Top border
+        sb.append("   ");
+        for (int x = 0; x < WIDTH; x++) sb.append(String.format("%2d", x));
+        sb.append("\n  +").append("--".repeat(WIDTH)).append("+\n");
+
+        for (int y = 0; y < HEIGHT; y++) {
+            sb.append(String.format("%2d|", y));
+            for (int x = 0; x < WIDTH; x++) {
+                String unitAtPos = findUnitAt(unitPositions, x, y);
+                if (unitAtPos != null) {
+                    // Use first letter of Unit ID
+                    sb.append(" ").append(unitAtPos.substring(0, 1).toUpperCase());
+                } else {
+                    sb.append(" .");
+                }
             }
-            System.out.println();
+            sb.append("|\n");
         }
+
+        sb.append("  +").append("--".repeat(WIDTH)).append("+\n");
+        sb.append("Units: ").append(unitPositions.toString()).append("\n");
+        sb.append("Enter command (unitId x y) or 'exit': ");
+        
+        System.out.print(sb.toString());
+        System.out.flush();
     }
 
-    public void drawUnit(String unitId, int x, int y) {
-        System.out.println("GameRenderer: Drawing unit " + unitId + " at (" + x + "," + y + ").");
+    private String findUnitAt(Map<String, GridPosition> unitPositions, int x, int y) {
+        for (Map.Entry<String, GridPosition> entry : unitPositions.entrySet()) {
+            if (entry.getValue().x() == x && entry.getValue().y() == y) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     public void showMessage(String message) {
-        System.out.println("GameRenderer: " + message);
-    }
-
-    public void refresh() {
-        System.out.println("GameRenderer: Refreshing screen... (Lanterna would do this)");
+        System.out.println("\n[LOG]: " + message);
     }
 
     public void close() {
-        System.out.println("GameRenderer: Closing screen... (Lanterna would do this)");
+        System.out.println("Closing game...");
     }
 }

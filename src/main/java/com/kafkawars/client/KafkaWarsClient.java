@@ -24,8 +24,11 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
 
+import java.util.Scanner;
+
 public class KafkaWarsClient {
 
+<<<<<<< HEAD
     private static String PLAYER_ID = "player-1"; // Default
     private static final String MATCH_ID = "match-1";
 
@@ -203,5 +206,68 @@ public class KafkaWarsClient {
         public void onError(WebSocket webSocket, Throwable error) {
             status.set("WS Error: " + error.getMessage());
         }
+=======
+    public static void main(String[] args) throws Exception {
+        System.out.println("--- KafkaWars Distributed Client ---");
+
+        CommandSender commandSender = new CommandSender();
+        GameRenderer renderer = new GameRenderer();
+        Scanner scanner = new Scanner(System.in);
+        
+        System.out.println("Connecting to: " + ClientConfig.API_BASE_URL);
+        System.out.print("Enter Player ID: ");
+        String playerId = scanner.nextLine();
+        String matchId = "match-1";
+
+        renderer.initialize();
+
+        // Background thread to refresh the map periodically
+        Thread refreshThread = new Thread(() -> {
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    com.kafkawars.domain.GameState state = commandSender.fetchGameState(matchId);
+                    if (state != null) {
+                        renderer.render(state.unitPositions());
+                    }
+                    Thread.sleep(2000); // Refresh every 2 seconds
+                }
+            } catch (InterruptedException ignored) {
+            } catch (Exception e) {
+                System.err.println("Refresh error: " + e.getMessage());
+            }
+        });
+        refreshThread.setDaemon(true);
+        refreshThread.start();
+
+        while (true) {
+            // The renderer prints the prompt, so we just wait for input
+            String input = scanner.nextLine();
+            if ("exit".equalsIgnoreCase(input)) break;
+
+            try {
+                String[] parts = input.split(" ");
+                if (parts.length != 3) {
+                    renderer.showMessage("Use: [unitId] [x] [y]");
+                    continue;
+                }
+
+                String unitId = parts[0];
+                int x = Integer.parseInt(parts[1]);
+                int y = Integer.parseInt(parts[2]);
+
+                commandSender.sendMoveCommand(playerId, unitId, matchId, new GridPosition(x, y));
+                renderer.showMessage("Command sent!");
+                
+                // Immediate refresh after sending command
+                com.kafkawars.domain.GameState state = commandSender.fetchGameState(matchId);
+                if (state != null) renderer.render(state.unitPositions());
+                
+            } catch (Exception e) {
+                renderer.showMessage("Error: " + e.getMessage());
+            }
+        }
+
+        System.out.println("--- KafkaWars Client Shutting Down ---");
+>>>>>>> 71429a0 (improvement)
     }
 }

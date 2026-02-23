@@ -14,6 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kafkawars.data.GameStateRepository;
+import com.kafkawars.domain.GameState;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 @RestController
 @RequestMapping("/api/v1")
 public class CommandController {
@@ -23,11 +28,18 @@ public class CommandController {
     private final SecurityValidator securityValidator;
     private final CommandProducer commandProducer;
     private final ObjectMapper objectMapper;
+    private final GameStateRepository gameStateRepository;
 
-    public CommandController(SecurityValidator securityValidator, CommandProducer commandProducer, ObjectMapper objectMapper) {
+    public CommandController(SecurityValidator securityValidator, CommandProducer commandProducer, ObjectMapper objectMapper, GameStateRepository gameStateRepository) {
         this.securityValidator = securityValidator;
         this.commandProducer = commandProducer;
         this.objectMapper = objectMapper;
+        this.gameStateRepository = gameStateRepository;
+    }
+
+    @GetMapping("/state/{matchId}")
+    public ResponseEntity<GameState> getGameState(@PathVariable String matchId) {
+        return ResponseEntity.ok(gameStateRepository.findByMatchId(matchId));
     }
 
     @PostMapping("/command")

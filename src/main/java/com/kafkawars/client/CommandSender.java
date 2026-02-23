@@ -12,10 +12,26 @@ import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.kafkawars.domain.GameState;
+
 public class CommandSender {
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public GameState fetchGameState(String matchId) throws Exception {
+        String url = ClientConfig.API_BASE_URL + "/state/" + matchId;
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), GameState.class);
+        }
+        return null;
+    }
 
     public void sendMoveCommand(String playerId, String unitId, String matchId, GridPosition target) throws Exception {
         // 1. Create the core command

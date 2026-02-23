@@ -17,6 +17,10 @@ import java.util.Objects;
 @Service
 public class GameEngine {
 
+    private static final int GRID_WIDTH = 20;
+    private static final int GRID_HEIGHT = 20;
+    private static final double MAX_MOVE_DISTANCE = 1.5; // Allows diagonal movement (sqrt(2) approx 1.414)
+
     /**
      * Processes a single MoveCommand against the current game state.
      * This is a pure function that returns the result of the command without side effects.
@@ -26,6 +30,7 @@ public class GameEngine {
      * @return A ProcessingResult, which is either a Success (with UnitMoved) or a Failure (with MovementRejected).
      */
     public ProcessingResult processMove(GameState currentState, MoveCommand command) {
+<<<<<<< HEAD
         UnitState unitState = currentState.units().get(command.unitId());
 
         // 1. Check if unit exists
@@ -43,6 +48,19 @@ public class GameEngine {
         }
 
         // 3. Check if the target position is already occupied by another unit.
+=======
+        // --- Validation Logic ---
+        
+        // 1. Check if the target position is within the grid boundaries.
+        if (!command.target().isValid(GRID_WIDTH, GRID_HEIGHT)) {
+            return new ProcessingResult.Failure(
+                new MovementRejected(command.unitId(), command.target(), "Target position is out of bounds.")
+            );
+        }
+
+        // 2. Check if the target position is already occupied by another unit.
+        // This is the core of the deterministic concurrency resolution.
+>>>>>>> 71429a0 (improvement)
         if (isCellOccupied(currentState, command.target())) {
             return new ProcessingResult.Failure(
                 new MovementRejected(command.unitId(), command.target(), "Target cell is occupied.")
@@ -52,6 +70,25 @@ public class GameEngine {
         // A more robust implementation would check for movement range, energy, etc.
         GridPosition oldPosition = unitState.position();
 
+<<<<<<< HEAD
+=======
+        // 3. Movement range validation
+        if (oldPosition != null) {
+            // Unit exists, check if movement is within range.
+            if (oldPosition.distanceTo(command.target()) > MAX_MOVE_DISTANCE) {
+                return new ProcessingResult.Failure(
+                    new MovementRejected(command.unitId(), command.target(), "Movement distance too far.")
+                );
+            }
+        } else {
+            // Unit does not exist (Spawning).
+            // Logic for spawning can be added here (e.g., spawn zones).
+            // For now, we allow spawning anywhere that is valid and unoccupied.
+        }
+
+        // --- Event Generation ---
+        
+>>>>>>> 71429a0 (improvement)
         // If all validations pass, create a UnitMoved event.
         UnitMoved event = new UnitMoved(
             command.unitId(),
