@@ -1,53 +1,92 @@
 package com.kafkawars.data;
 
+import com.kafkawars.api.LobbyState;
 import com.kafkawars.domain.GameState;
+import com.kafkawars.domain.GameStatus;
 import com.kafkawars.domain.GridPosition;
 import com.kafkawars.domain.UnitState;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * In-memory repository for storing game state.
- * This is a simplified stand-in for a more robust solution like Kafka Streams KTable or a persistent snapshot store.
- * The key is the Match ID.
- */
 @Repository
 public class GameStateRepository {
 
+    private static final int[][] CORNERS = {{1, 1}, {18, 1}, {1, 18}, {18, 18}};
+
     private final Map<String, GameState> gameStates = new ConcurrentHashMap<>();
 
-    /**
-     * Finds the current state for a given match.
-     * @param matchId The ID of the match.
-     * @return An Optional containing the GameState if it exists, otherwise empty.
-     */
+    // Lobby: single waiting room
+    private final AtomicReference<String> lobbyMatchId = new AtomicReference<>(null);
+    private final CopyOnWriteArrayList<String> lobbyPlayers = new CopyOnWriteArrayList<>();
+
     public Optional<GameState> findByMatchId(String matchId) {
         return Optional.ofNullable(gameStates.get(matchId));
     }
 
-    /**
-     * Creates and saves the initial state for a new match.
-     * @param matchId The ID of the match to create.
-     * @return The newly created GameState.
-     */
+    /** Legacy 2-player init for backward compatibility. */
     public GameState createInitialState(String matchId) {
-        GameState initialState = new GameState(Map.of(
-            "p1-unit1", new UnitState("player1", new GridPosition(1, 1)),
-            "p2-unit1", new UnitState("player2", new GridPosition(8, 8))
-        ));
+        return createInitialState(matchId, List.of("player1", "player2"));
+    }
+
+    /** Create a match with up to 4 players, each placed at a corner. */
+    public GameState createInitialState(String matchId, List<String> playerIds) {
+        Map<String, UnitState> units = new HashMap<>();
+        int count = Math.min(playerIds.size(), 4);
+        for (int i = 0; i < count; i++) {
+            String pid = playerIds.get(i);
+            String uid = "p" + (i + 1) + "-unit1";
+            units.put(uid, new UnitState(pid, new GridPosition(CORNERS[i][0], CORNERS[i][1])));
+        }
+        GameState initialState = new GameState(units, GameStatus.ACTIVE, null);
         this.save(matchId, initialState);
         return initialState;
     }
 
-    /**
-     * Saves the new state for a given match.
-     * @param matchId The ID of the match.
-     * @param gameState The new GameState to save.
-     */
     public void save(String matchId, GameState gameState) {
         gameStates.put(matchId, gameState);
+    }
+
+    /** Add a player to the lobby. Returns the LobbyState after joining. */
+    public synchronized LobbyState joinLobby(String playerId) {
+        // Allocate a matchId if this is the first player
+        lobbyMatchId.compareAndSet(null, "match-" + UUID.randomUUID().toString().substring(0, 8));
+        String matchId = lobbyMatchId.get();
+
+        if (!lobbyPlayers.contains(playerId)) {
+            lobbyPlayers.add(playerId);
+        }
+
+        if (lobbyPlayers.size() >= 2) {
+            // Start the game if not already active
+            GameState existing = gameStates.get(matchId);
+            if (existing == null || existing.status() == GameStatus.WAITING) {
+                createInitialState(matchId, new ArrayList<>(lobbyPlayers));
+            }
+            List<String> players = new ArrayList<>(lobbyPlayers);
+            // Reset lobby for next game
+            lobbyMatchId.set(null);
+            lobbyPlayers.clear();
+            return new LobbyState(matchId, players, "ACTIVE");
+        }
+
+        return new LobbyState(matchId, new ArrayList<>(lobbyPlayers), "WAITING");
+    }
+
+    /** Get current lobby state. */
+    public LobbyState getLobbyState() {
+        String matchId = lobbyMatchId.get();
+        if (matchId == null) {
+            return new LobbyState(null, List.of(), "EMPTY");
+        }
+        return new LobbyState(matchId, new ArrayList<>(lobbyPlayers), "WAITING");
     }
 }

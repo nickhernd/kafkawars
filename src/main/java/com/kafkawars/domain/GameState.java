@@ -1,46 +1,67 @@
 package com.kafkawars.domain;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Represents an immutable snapshot of the game state.
- * It contains the state of all units on the board, including who owns them.
- *
- * @param units A map where the key is the unit ID and the value is the unit's state (owner and position).
- */
-public record GameState(Map<String, UnitState> units) {
+public record GameState(Map<String, UnitState> units, GameStatus status, String winnerId) {
 
-    /**
-     * Creates an immutable GameState. The provided map is defensively copied.
-     * @param units The map of unit states.
-     */
-    public GameState(Map<String, UnitState> units) {
+    public GameState(Map<String, UnitState> units, GameStatus status, String winnerId) {
         this.units = Collections.unmodifiableMap(Map.copyOf(units));
+        this.status = status;
+        this.winnerId = winnerId;
     }
 
-    /**
-     * Returns a new GameState with the updated position for a specific unit.
-     * The owner of the unit remains the same.
-     *
-     * @param unitId The ID of the unit to move.
-     * @param newPosition The new position of the unit.
-     * @return A new, immutable GameState instance with the change applied.
-     */
+    public GameState(Map<String, UnitState> units) {
+        this(units, GameStatus.WAITING, null);
+    }
+
     public GameState updateUnitPosition(String unitId, GridPosition newPosition) {
-        Map<String, UnitState> newUnits = new java.util.HashMap<>(this.units);
-        UnitState oldUnitState = newUnits.get(unitId);
-        if (oldUnitState != null) {
-            newUnits.put(unitId, new UnitState(oldUnitState.playerId(), newPosition));
+        Map<String, UnitState> newUnits = new HashMap<>(this.units);
+        UnitState old = newUnits.get(unitId);
+        if (old != null) {
+            newUnits.put(unitId, new UnitState(old.playerId(), newPosition, old.hp(), old.maxHp()));
         }
-        return new GameState(newUnits);
+        return new GameState(newUnits, this.status, this.winnerId);
     }
 
-    /**
-     * Helper method to get a map of just the unit positions.
-     * @return A map where the key is the unit ID and the value is the GridPosition.
-     */
+    public GameState applyHit(String unitId) {
+        Map<String, UnitState> newUnits = new HashMap<>(this.units);
+        UnitState unit = newUnits.get(unitId);
+        if (unit == null) return this;
+
+        UnitState damaged = unit.takeDamage(1);
+        if (damaged.isAlive()) {
+            newUnits.put(unitId, damaged);
+        } else {
+            newUnits.remove(unitId);
+        }
+        return new GameState(newUnits, this.status, this.winnerId).checkWinCondition();
+    }
+
+    public GameState checkWinCondition() {
+        if (this.status != GameStatus.ACTIVE) return this;
+
+        long alivePlayers = units.values().stream()
+            .map(UnitState::playerId)
+            .distinct()
+            .count();
+
+        if (alivePlayers <= 1) {
+            String winner = units.values().stream()
+                .map(UnitState::playerId)
+                .findFirst()
+                .orElse(null);
+            return new GameState(this.units, GameStatus.FINISHED, winner);
+        }
+        return this;
+    }
+
+    public GameState activate() {
+        return new GameState(this.units, GameStatus.ACTIVE, null);
+    }
+
     public Map<String, GridPosition> getUnitPositions() {
         return units.entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().position()));

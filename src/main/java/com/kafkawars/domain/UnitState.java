@@ -1,10 +1,16 @@
 package com.kafkawars.domain;
 
-/**
- * Represents the state of a single unit, including its owner and position.
- *
- * @param playerId The ID of the player who owns the unit.
- * @param position The current position of the unit on the grid.
- */
-public record UnitState(String playerId, GridPosition position) {
+public record UnitState(String playerId, GridPosition position, int hp, int maxHp) {
+
+    public UnitState(String playerId, GridPosition position) {
+        this(playerId, position, 3, 3);
+    }
+
+    public boolean isAlive() {
+        return hp > 0;
+    }
+
+    public UnitState takeDamage(int dmg) {
+        return new UnitState(playerId, position, Math.max(0, hp - dmg), maxHp);
+    }
 }
