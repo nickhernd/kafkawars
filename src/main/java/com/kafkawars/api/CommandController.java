@@ -38,9 +38,9 @@ public class CommandController {
 
     @GetMapping("/state/{matchId}")
     public ResponseEntity<GameState> getGameState(@PathVariable String matchId) {
-        GameState state = gameStateRepository.findByMatchId(matchId)
-                .orElseGet(() -> gameStateRepository.createInitialState(matchId));
-        return ResponseEntity.ok(state);
+        return gameStateRepository.findByMatchId(matchId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/lobby")

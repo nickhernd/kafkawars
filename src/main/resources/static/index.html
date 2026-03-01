@@ -257,7 +257,7 @@
     const CELL  = 30;
     const GRID  = 20;
     const PLAYER_COLORS = ['#00ff88', '#ff4444', '#ffee00', '#4488ff'];
-    const MAX_HP = 3;
+    const MAX_HP = 5;
 
     // ─── State ─────────────────────────────────────────────────────────
     let myPlayerId  = null;
@@ -267,6 +267,7 @@
     let ws          = null;
     let playerColorMap = {};   // playerId → color
     let hitEffects  = [];      // [{x, y, startTime}]
+    let projectiles = [];      // [{startX,startY,endX,endY,color,startTime,duration}]
     let animFrame   = null;
 
     const canvas  = document.getElementById('game-canvas');
@@ -309,10 +310,12 @@
         const poll = async () => {
             try {
                 const resp = await fetch(`/api/v1/state/${matchId}`);
-                const state = await resp.json();
-                if (state.status === 'ACTIVE') {
-                    startGame(matchId);
-                    return;
+                if (resp.ok) {
+                    const state = await resp.json();
+                    if (state.status === 'ACTIVE') {
+                        startGame(matchId);
+                        return;
+                    }
                 }
             } catch (_) {}
             setTimeout(poll, 1000);
@@ -398,6 +401,7 @@
         ctx.clearRect(0, 0, 600, 600);
         drawGrid();
         drawHitEffects(now);
+        drawProjectiles(now);
         drawUnits();
 
         animFrame = requestAnimationFrame(renderLoop);
@@ -415,6 +419,66 @@
             ctx.moveTo(0,   i * CELL);
             ctx.lineTo(600, i * CELL);
             ctx.stroke();
+        }
+    }
+
+    // ─── Projectiles ───────────────────────────────────────────────────
+    function addProjectile(fromX, fromY, direction, color) {
+        let dx = 0, dy = 0;
+        switch (direction) {
+            case 'UP':    dy = -1; break;
+            case 'DOWN':  dy =  1; break;
+            case 'LEFT':  dx = -1; break;
+            case 'RIGHT': dx =  1; break;
+            default: return;
+        }
+
+        // Trace path: stop at first unit or grid edge
+        let cx = fromX, cy = fromY, maxDist = 0;
+        while (true) {
+            cx += dx; cy += dy;
+            if (cx < 0 || cx >= GRID || cy < 0 || cy >= GRID) break;
+            maxDist++;
+            if (gameState) {
+                const blocked = Object.values(gameState.units).some(
+                    u => u.position.x === cx && u.position.y === cy);
+                if (blocked) break;
+            }
+        }
+        if (maxDist === 0) return;
+
+        projectiles.push({
+            startX: fromX, startY: fromY,
+            endX: fromX + dx * maxDist, endY: fromY + dy * maxDist,
+            color, startTime: performance.now(),
+            duration: Math.max(150, maxDist * 70)   // ~70ms per cell
+        });
+    }
+
+    function drawProjectiles(now) {
+        projectiles = projectiles.filter(p => now - p.startTime < p.duration);
+        for (const p of projectiles) {
+            const t  = (now - p.startTime) / p.duration;
+            const px = (p.startX + (p.endX - p.startX) * t) * CELL + CELL / 2;
+            const py = (p.startY + (p.endY - p.startY) * t) * CELL + CELL / 2;
+
+            ctx.save();
+            // Outer glow
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur  = 14;
+            ctx.fillStyle   = p.color;
+            ctx.globalAlpha = 0.55;
+            ctx.beginPath();
+            ctx.arc(px, py, 6, 0, Math.PI * 2);
+            ctx.fill();
+            // Bright core
+            ctx.shadowBlur  = 6;
+            ctx.fillStyle   = '#ffffff';
+            ctx.globalAlpha = 1;
+            ctx.beginPath();
+            ctx.arc(px, py, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
         }
     }
 
@@ -564,7 +628,13 @@
     }
 
     async function sendAttack(direction) {
-        if (!myUnitId) return;
+        if (!myUnitId || !gameState) return;
+        const unit = gameState.units[myUnitId];
+        if (!unit) return;
+
+        const color = playerColorMap[myPlayerId] || '#ffffff';
+        addProjectile(unit.position.x, unit.position.y, direction, color);
+
         await postCommand({
             actionType: 'ATTACK',
             playerId:  myPlayerId,
