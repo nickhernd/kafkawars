@@ -1,6 +1,7 @@
 package com.kafkawars.messaging;
 
 import com.kafkawars.config.KafkaTopicConfig;
+import com.kafkawars.domain.PlayerAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -20,14 +21,12 @@ public class CommandProducer {
     }
 
     /**
-     * Publishes a command object to the game.commands topic.
+     * Publishes a command to the game.commands topic.
      * @param command The command payload (e.g., MoveCommand).
      * @param matchId The ID of the match, used as the partition key to ensure order.
      */
-    public void publish(Object command, String matchId) {
+    public void publish(PlayerAction command, String matchId) {
         log.info("Publishing command for match {}: {}", matchId, command);
-        // The matchId is used as the key to ensure all commands for the same match
-        // go to the same partition, preserving order.
         kafkaTemplate.send(KafkaTopicConfig.COMMANDS_TOPIC, matchId, command);
     }
 }

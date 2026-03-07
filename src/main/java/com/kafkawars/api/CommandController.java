@@ -41,6 +41,7 @@ public class CommandController {
         return gameStateRepository.findByMatchId(matchId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+<<<<<<< HEAD
     }
 
     @GetMapping("/lobby")
@@ -56,6 +57,8 @@ public class CommandController {
         }
         LobbyState lobbyState = gameStateRepository.joinLobby(playerId);
         return ResponseEntity.ok(lobbyState);
+=======
+>>>>>>> 151bd7b (bugs correction)
     }
 
     @PostMapping("/command")
@@ -79,6 +82,10 @@ public class CommandController {
                     log.warn("MoveCommand is missing a matchId.");
                     return ResponseEntity.badRequest().build();
                 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 151bd7b (bugs correction)
                 commandProducer.publish(moveCommand, moveCommand.matchId());
                 return ResponseEntity.accepted().build();
 

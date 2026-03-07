@@ -57,7 +57,8 @@ public class SecurityValidator {
 
     private boolean isTimestampValid(long commandTimestamp) {
         long now = Instant.now().getEpochSecond();
-        return (now - commandTimestamp) < TIMESTAMP_WINDOW_SECONDS;
+        long delta = now - commandTimestamp;
+        return delta >= 0 && delta < TIMESTAMP_WINDOW_SECONDS;
     }
 
     private boolean isNonceReplayed(String nonce) {

@@ -32,7 +32,26 @@ public class GameStateRepository {
         return Optional.ofNullable(gameStates.get(matchId));
     }
 
+<<<<<<< HEAD
     /** Legacy 2-player init for backward compatibility. */
+=======
+    /**
+     * Returns the state for a given match, or throws if not found.
+     * @param matchId The ID of the match.
+     * @return The GameState.
+     * @throws IllegalStateException if no state exists for the match.
+     */
+    public GameState getByMatchId(String matchId) {
+        return findByMatchId(matchId)
+                .orElseThrow(() -> new IllegalStateException("No state found for match: " + matchId));
+    }
+
+    /**
+     * Creates and saves the initial state for a new match.
+     * @param matchId The ID of the match to create.
+     * @return The newly created GameState.
+     */
+>>>>>>> 151bd7b (bugs correction)
     public GameState createInitialState(String matchId) {
         return createInitialState(matchId, List.of("player1", "player2"));
     }

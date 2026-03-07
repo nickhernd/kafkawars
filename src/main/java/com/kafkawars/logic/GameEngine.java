@@ -23,6 +23,11 @@ public class GameEngine {
     private static final double MAX_MOVE_DISTANCE = 1.5;
 
     public ProcessingResult processMove(GameState currentState, MoveCommand command) {
+<<<<<<< HEAD
+=======
+
+        // 1. Check if target position is within the grid boundaries.
+>>>>>>> 151bd7b (bugs correction)
         if (!command.target().isValid(GRID_WIDTH, GRID_HEIGHT)) {
             return new ProcessingResult.Failure(
                 new MovementRejected(command.unitId(), command.target(), "Target position is out of bounds.")
@@ -31,18 +36,30 @@ public class GameEngine {
 
         UnitState unitState = currentState.units().get(command.unitId());
 
+<<<<<<< HEAD
+=======
+        // 2. Check if the unit exists.
+>>>>>>> 151bd7b (bugs correction)
         if (unitState == null) {
             return new ProcessingResult.Failure(
                 new MovementRejected(command.unitId(), command.target(), "Unit does not exist.")
             );
         }
 
+<<<<<<< HEAD
+=======
+        // 3. Check if the player owns the unit.
+>>>>>>> 151bd7b (bugs correction)
         if (!unitState.playerId().equals(command.playerId())) {
             return new ProcessingResult.Failure(
                 new MovementRejected(command.unitId(), command.target(), "Player does not own this unit.")
             );
         }
 
+<<<<<<< HEAD
+=======
+        // 4. Check if the target position is already occupied by another unit.
+>>>>>>> 151bd7b (bugs correction)
         if (isCellOccupied(currentState, command.target())) {
             return new ProcessingResult.Failure(
                 new MovementRejected(command.unitId(), command.target(), "Target cell is occupied.")
@@ -50,6 +67,11 @@ public class GameEngine {
         }
 
         GridPosition oldPosition = unitState.position();
+<<<<<<< HEAD
+=======
+
+        // 5. Check movement range.
+>>>>>>> 151bd7b (bugs correction)
         if (oldPosition != null && oldPosition.distanceTo(command.target()) > MAX_MOVE_DISTANCE) {
             return new ProcessingResult.Failure(
                 new MovementRejected(command.unitId(), command.target(), "Movement distance too far.")
@@ -106,6 +128,10 @@ public class GameEngine {
 
     private boolean isCellOccupied(GameState gameState, GridPosition targetPosition) {
         return gameState.units().values().stream()
+<<<<<<< HEAD
             .anyMatch(u -> u.position().equals(targetPosition));
+=======
+                .anyMatch(unitState -> targetPosition.equals(unitState.position()));
+>>>>>>> 151bd7b (bugs correction)
     }
 }

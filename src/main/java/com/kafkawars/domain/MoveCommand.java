@@ -8,5 +8,5 @@ package com.kafkawars.domain;
  * @param unitId The ID of the unit to be moved.
  * @param target The target GridPosition for the unit.
  */
-public record MoveCommand(String playerId, String unitId, String matchId, GridPosition target, String actionType) {
+public record MoveCommand(String playerId, String unitId, String matchId, GridPosition target, String actionType) implements PlayerAction {
 }

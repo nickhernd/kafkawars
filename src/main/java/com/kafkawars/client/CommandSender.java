@@ -10,6 +10,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.kafkawars.domain.GameState;
@@ -19,7 +20,7 @@ public class CommandSender {
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public GameState fetchGameState(String matchId) throws Exception {
+    public Optional<GameState> fetchGameState(String matchId) throws Exception {
         String url = ClientConfig.API_BASE_URL + "/state/" + matchId;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -28,9 +29,9 @@ public class CommandSender {
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() == 200) {
-            return objectMapper.readValue(response.body(), GameState.class);
+            return Optional.of(objectMapper.readValue(response.body(), GameState.class));
         }
-        return null;
+        return Optional.empty();
     }
 
     public void sendMoveCommand(String playerId, String unitId, String matchId, GridPosition target) throws Exception {

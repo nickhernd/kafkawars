@@ -9,5 +9,5 @@ import com.kafkawars.domain.GridPosition;
  * @param oldPosition The position the unit moved from.
  * @param newPosition The new position of the unit.
  */
-public record UnitMoved(String unitId, GridPosition oldPosition, GridPosition newPosition) {
+public record UnitMoved(String unitId, GridPosition oldPosition, GridPosition newPosition) implements GameEvent {
 }

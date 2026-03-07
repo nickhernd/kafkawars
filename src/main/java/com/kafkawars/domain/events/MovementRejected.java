@@ -9,5 +9,5 @@ import com.kafkawars.domain.GridPosition;
  * @param attemptedPosition The position the unit tried to move to.
  * @param reason A description of why the movement was rejected.
  */
-public record MovementRejected(String unitId, GridPosition attemptedPosition, String reason) {
+public record MovementRejected(String unitId, GridPosition attemptedPosition, String reason) implements GameEvent {
 }

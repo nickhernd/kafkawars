@@ -86,6 +86,7 @@ public class GameLoopService {
                 GameState nextState = currentState.updateUnitPosition(
                     success.event().unitId(), success.event().newPosition());
                 gameStateRepository.save(matchId, nextState);
+<<<<<<< HEAD
                 eventProducer.publish(success.event());
                 webSocketHandler.broadcastState(matchId, nextState);
                 log.info("Move applied for match {}", matchId);
@@ -93,6 +94,22 @@ public class GameLoopService {
             case ProcessingResult.Failure failure -> {
                 eventProducer.publish(failure.event());
                 log.warn("Move rejected for match {}: {}", matchId, failure.event().reason());
+=======
+                try {
+                    eventProducer.publish(success.event());
+                } catch (Exception e) {
+                    log.error("CRITICAL: State saved for match {} but event publish failed. Manual reconciliation may be needed. Event: {}", matchId, success.event(), e);
+                }
+                log.info("State updated for match {}. New state hash: {}", matchId, nextState.hashCode());
+            }
+            case ProcessingResult.Failure failure -> {
+                try {
+                    eventProducer.publish(failure.event());
+                } catch (Exception e) {
+                    log.error("Failed to publish rejection event for match {}: {}", matchId, failure.event(), e);
+                }
+                log.warn("Command rejected for match {}: {}", matchId, failure.event().reason());
+>>>>>>> 151bd7b (bugs correction)
             }
             default -> log.warn("Unexpected result type for MOVE in match {}", matchId);
         }

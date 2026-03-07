@@ -1,6 +1,7 @@
 package com.kafkawars.messaging;
 
 import com.kafkawars.config.KafkaTopicConfig;
+import com.kafkawars.domain.events.GameEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -16,10 +17,8 @@ public class EventProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void publish(Object event) {
+    public void publish(GameEvent event) {
         log.info("Publishing event: {}", event);
-        // We will need a proper serialization strategy, but for now, this shows the intent.
-        // The key for the event should likely be the match or unit ID for partitioning.
         kafkaTemplate.send(KafkaTopicConfig.EVENTS_TOPIC, event);
     }
 }
