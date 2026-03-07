@@ -91,18 +91,23 @@ class GameEngineTest {
         GridPosition initialPos = new GridPosition(0, 0);
         GameState currentState = new GameState(Collections.singletonMap("unit-1", new UnitState("player-1", initialPos)));
 <<<<<<< HEAD
+<<<<<<< HEAD
         // Attempt to move 2 steps
+=======
+>>>>>>> 151bd7b (bugs correction)
         MoveCommand command = new MoveCommand("player-1", "unit-1", "match-1", new GridPosition(2, 0), "MOVE");
 
-        // Act
         ProcessingResult result = gameEngine.processMove(currentState, command);
 
+<<<<<<< HEAD
         // Assert
 =======
         MoveCommand command = new MoveCommand("player-1", "unit-1", "match-1", new GridPosition(2, 0), "MOVE");
 
         ProcessingResult result = gameEngine.processMove(currentState, command);
 
+>>>>>>> 151bd7b (bugs correction)
+=======
 >>>>>>> 151bd7b (bugs correction)
         assertTrue(result instanceof ProcessingResult.Failure);
         ProcessingResult.Failure failure = (ProcessingResult.Failure) result;

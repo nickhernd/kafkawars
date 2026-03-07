@@ -266,6 +266,9 @@ public class KafkaWarsClient {
         public void onError(WebSocket webSocket, Throwable error) {
             status.set("WS Error: " + error.getMessage());
         }
+<<<<<<< HEAD
+>>>>>>> 151bd7b (bugs correction)
+=======
 >>>>>>> 151bd7b (bugs correction)
     }
 }

@@ -42,6 +42,7 @@ public class CommandController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
 <<<<<<< HEAD
+<<<<<<< HEAD
     }
 
     @GetMapping("/lobby")
@@ -57,6 +58,8 @@ public class CommandController {
         }
         LobbyState lobbyState = gameStateRepository.joinLobby(playerId);
         return ResponseEntity.ok(lobbyState);
+=======
+>>>>>>> 151bd7b (bugs correction)
 =======
 >>>>>>> 151bd7b (bugs correction)
     }
@@ -85,6 +88,9 @@ public class CommandController {
 <<<<<<< HEAD
 =======
 
+<<<<<<< HEAD
+>>>>>>> 151bd7b (bugs correction)
+=======
 >>>>>>> 151bd7b (bugs correction)
                 commandProducer.publish(moveCommand, moveCommand.matchId());
                 return ResponseEntity.accepted().build();

@@ -24,6 +24,11 @@ public class GameEngine {
 
     public ProcessingResult processMove(GameState currentState, MoveCommand command) {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+        // 1. Check if target position is within the grid boundaries.
+>>>>>>> 151bd7b (bugs correction)
 =======
 
         // 1. Check if target position is within the grid boundaries.
@@ -37,6 +42,10 @@ public class GameEngine {
         UnitState unitState = currentState.units().get(command.unitId());
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        // 2. Check if the unit exists.
+>>>>>>> 151bd7b (bugs correction)
 =======
         // 2. Check if the unit exists.
 >>>>>>> 151bd7b (bugs correction)
@@ -47,6 +56,10 @@ public class GameEngine {
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        // 3. Check if the player owns the unit.
+>>>>>>> 151bd7b (bugs correction)
 =======
         // 3. Check if the player owns the unit.
 >>>>>>> 151bd7b (bugs correction)
@@ -57,6 +70,10 @@ public class GameEngine {
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        // 4. Check if the target position is already occupied by another unit.
+>>>>>>> 151bd7b (bugs correction)
 =======
         // 4. Check if the target position is already occupied by another unit.
 >>>>>>> 151bd7b (bugs correction)
@@ -71,6 +88,9 @@ public class GameEngine {
 =======
 
         // 5. Check movement range.
+<<<<<<< HEAD
+>>>>>>> 151bd7b (bugs correction)
+=======
 >>>>>>> 151bd7b (bugs correction)
         if (oldPosition != null && oldPosition.distanceTo(command.target()) > MAX_MOVE_DISTANCE) {
             return new ProcessingResult.Failure(
@@ -129,7 +149,11 @@ public class GameEngine {
     private boolean isCellOccupied(GameState gameState, GridPosition targetPosition) {
         return gameState.units().values().stream()
 <<<<<<< HEAD
+<<<<<<< HEAD
             .anyMatch(u -> u.position().equals(targetPosition));
+=======
+                .anyMatch(unitState -> targetPosition.equals(unitState.position()));
+>>>>>>> 151bd7b (bugs correction)
 =======
                 .anyMatch(unitState -> targetPosition.equals(unitState.position()));
 >>>>>>> 151bd7b (bugs correction)

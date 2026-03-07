@@ -3,8 +3,13 @@ package com.kafkawars.client;
 public class ClientConfig {
     private static final String SERVER_IP = System.getProperty("server.ip", "localhost");
 <<<<<<< HEAD
+<<<<<<< HEAD
     private static final String SERVER_PORT = System.getProperty("server.port", "8082");
     
+=======
+    private static final String SERVER_PORT = System.getProperty("server.port", "8081");
+
+>>>>>>> 151bd7b (bugs correction)
 =======
     private static final String SERVER_PORT = System.getProperty("server.port", "8081");
 

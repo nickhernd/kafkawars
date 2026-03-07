@@ -87,6 +87,7 @@ public class GameLoopService {
                     success.event().unitId(), success.event().newPosition());
                 gameStateRepository.save(matchId, nextState);
 <<<<<<< HEAD
+<<<<<<< HEAD
                 eventProducer.publish(success.event());
                 webSocketHandler.broadcastState(matchId, nextState);
                 log.info("Move applied for match {}", matchId);
@@ -95,6 +96,8 @@ public class GameLoopService {
                 eventProducer.publish(failure.event());
                 log.warn("Move rejected for match {}: {}", matchId, failure.event().reason());
 =======
+=======
+>>>>>>> 151bd7b (bugs correction)
                 try {
                     eventProducer.publish(success.event());
                 } catch (Exception e) {

@@ -20,10 +20,13 @@ public record GameState(Map<String, UnitState> units, GameStatus status, String 
     public GameState updateUnitPosition(String unitId, GridPosition newPosition) {
         Map<String, UnitState> newUnits = new HashMap<>(this.units);
 <<<<<<< HEAD
+<<<<<<< HEAD
         UnitState old = newUnits.get(unitId);
         if (old != null) {
             newUnits.put(unitId, new UnitState(old.playerId(), newPosition, old.hp(), old.maxHp()));
 =======
+=======
+>>>>>>> 151bd7b (bugs correction)
         UnitState oldUnitState = newUnits.get(unitId);
         if (oldUnitState != null) {
             newUnits.put(unitId, new UnitState(oldUnitState.playerId(), newPosition));

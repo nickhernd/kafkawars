@@ -47,6 +47,17 @@ public class GameStateRepository {
     }
 
     /**
+     * Returns the state for a given match, or throws if not found.
+     * @param matchId The ID of the match.
+     * @return The GameState.
+     * @throws IllegalStateException if no state exists for the match.
+     */
+    public GameState getByMatchId(String matchId) {
+        return findByMatchId(matchId)
+                .orElseThrow(() -> new IllegalStateException("No state found for match: " + matchId));
+    }
+
+    /**
      * Creates and saves the initial state for a new match.
      * @param matchId The ID of the match to create.
      * @return The newly created GameState.
