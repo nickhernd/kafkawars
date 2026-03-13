@@ -151,3 +151,6 @@ mvn test
 ```
 
 9 tests unitarios sobre el dominio y el motor de juego, sin dependencias externas.
+
+
+- [ ] decirle a claude que arregle los conflicot
